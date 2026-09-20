@@ -65,14 +65,14 @@ _tr = None
 
 
 def translate_fa_en(text, model_name):
-    """Translate Persian to English, phrase by phrase (better for prompts)."""
+    """Translate Persian to English with NLLB, phrase by phrase (better for prompts)."""
     global _tr
     import torch
-    from transformers import MarianMTModel, MarianTokenizer
+    from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
 
     if _tr is None:
-        tok = MarianTokenizer.from_pretrained(model_name)
-        mdl = MarianMTModel.from_pretrained(model_name).eval()
+        tok = AutoTokenizer.from_pretrained(model_name, src_lang="pes_Arab")
+        mdl = AutoModelForSeq2SeqLM.from_pretrained(model_name).eval()
         _tr = (tok, mdl)
     tok, mdl = _tr
     parts = [p.strip() for p in re.split(r"[\n.!؟?،,;؛]+", text) if p.strip()][:12]
@@ -80,7 +80,11 @@ def translate_fa_en(text, model_name):
         return text
     batch = tok(parts, return_tensors="pt", padding=True, truncation=True, max_length=128)
     with torch.inference_mode():
-        out = mdl.generate(**batch, num_beams=4, max_new_tokens=96)
+        out = mdl.generate(
+            **batch,
+            forced_bos_token_id=tok.convert_tokens_to_ids("eng_Latn"),
+            num_beams=4, max_new_tokens=96,
+        )
     return ", ".join(tok.decode(o, skip_special_tokens=True).strip(" .") for o in out)
 
 
