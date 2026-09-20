@@ -1,0 +1,8 @@
+{
+  "base_model": "Lykon/dreamshaper-8",
+  "lcm_lora": "latent-consistency/lcm-lora-sdv1-5",
+  "translator": "Helsinki-NLP/opus-mt-fa-en",
+  "steps": 5,
+  "guidance": 1.5,
+  "max_prompt_chars": 500
+}
